@@ -5,11 +5,11 @@ import Button from "./Button";
 export default function Index() {
 
   function souFuncionario() {
-    router.push("/home");
+    router.push("/loginHB");
   }
 
   function souMotorista() {
-    router.push("/home");
+    router.push("/loginDriver");
   }
 
   return (
