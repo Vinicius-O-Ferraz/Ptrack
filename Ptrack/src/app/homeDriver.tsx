@@ -2,8 +2,43 @@ import { Text, View, StyleSheet, Image } from "react-native";
 import { router } from "expo-router";
 import Button from "./Button";
 
-export default function Index() {
+export default function homeDriver() {
 
+  function adicionarCaixas() {
+    router.push("/adicionarCaixas");
+  }
+
+  function adicionarNumeroRemessa() {
+    router.push("/adicionarNumeroRemessa");
+  }
+
+  return (
+    <View style={styles.container}>
+
+      <Image
+              source={require("./images/caminhao.png")}
+              style={styles.logo}
+      />
+
+      <Text style={styles.text}>
+          TRANSPORTADOR
+      </Text>
+
+     
+
+      
+      <Button
+        title="Adicionar número de remessa"
+        onPress={adicionarNumeroRemessa}
+      />
+
+      <Button
+        title="Adicionar caixas para transporte"
+        onPress={adicionarCaixas}
+      />
+
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -11,7 +46,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f7c23e",
+     backgroundColor: "#244CA4",
   },
 
   logo: {
@@ -23,6 +58,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#E63A4A",
+    color: "#ffffff",
   },
 });

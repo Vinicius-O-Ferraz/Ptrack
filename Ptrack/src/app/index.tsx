@@ -1,6 +1,19 @@
 import { Text, View, StyleSheet, Image } from "react-native";
 import { router } from "expo-router";
+import { createClient } from "@supabase/supabase-js";
 import Button from "./Button";
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Configure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY."
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 
 export default function Index() {
 
@@ -15,7 +28,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("./logo.png")}
+        source={require("./images/logo.png")}
         style={styles.logo}
       />
 

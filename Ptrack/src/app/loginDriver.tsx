@@ -1,16 +1,30 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { View, Text, TextInput, Button, StyleSheet, Pressable } from "react-native";
+import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import { supabase } from "./supabaseClient";
+import Button from "./Button";
+
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
 
-  function fazerLogin() {
-    console.log("raiga!")
-    console.log("E-mail digitado:", email);
-    console.log("Senha digitada:", senha);
+  async function fazerLogin(email: string, senha: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: senha,
+    });
+
+    if (error) {
+      console.error("Erro ao fazer login:", error.message);
+      return;
+    }
+
+    // Só chega aqui se o login tiver sucesso
+    router.push("/homeDriver");
   }
+
+
 
   function primeiroAcesso() {
     console.log("Primeiro acesso");
@@ -44,7 +58,7 @@ export default function Login() {
 
       <Button
         title="Entrar"
-        onPress={fazerLogin}
+        onPress={() => fazerLogin(email, senha)}
       />
 
       <Pressable onPress={primeiroAcesso}>

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import { View, Text, TextInput, Button, StyleSheet, Pressable } from "react-native";
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+    process.env.EXPO_PUBLIC_SUPABASE_URL!,
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 
 export default function primeiroAcesso() {
   const [nome, setNome] = useState<string>("");
@@ -8,14 +15,34 @@ export default function primeiroAcesso() {
   const [email, setEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
 
+  async function cadastrar(nome: string, cpf: string, email: string, senha: string) {
+    const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: senha,
+        options: {
+            data: {
+                nome: nome,
+                cpf: cpf
+            }
+        }
+    });
 
-  function cadastrar() {
-    console.log("Nome digitado:", nome);
-    console.log("CPF digitado:", cpf);
-    console.log("E-mail digitado:", email);
-    console.log("Senha digitada:", senha);
-    router.push("/homeDriver");
-  }
+    if (error) {
+        console.error("Erro ao cadastrar motorista:", error.message);
+        return {
+            sucesso: false,
+            erro: error.message
+        };
+    }
+
+    console.log("Motorista cadastrado com sucesso!");
+    console.log("Usuário:", data.user);
+
+    return {
+        sucesso: true,
+        usuario: data.user
+    };
+}
 
 
   return (
@@ -67,7 +94,7 @@ export default function primeiroAcesso() {
 
       <Button
         title="Cadastrar"
-        onPress={cadastrar}
+          onPress={() => cadastrar(nome, cpf, email, senha)}
       />
 
       <Pressable onPress={primeiroAcesso}>
@@ -78,8 +105,6 @@ export default function primeiroAcesso() {
     </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
