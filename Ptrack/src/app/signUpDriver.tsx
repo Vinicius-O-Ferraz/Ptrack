@@ -35,6 +35,10 @@ export default function primeiroAcesso() {
         };
     }
 
+    else{
+      router.push("./homeDriver")
+    }
+
     console.log("Motorista cadastrado com sucesso!");
     console.log("Usuário:", data.user);
 
