@@ -1,14 +1,8 @@
-import { useState } from "react";
+  import { useState } from "react";
 import { router } from "expo-router";
 import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { supabase } from "./supabaseClient";
 import Button from "./Button";
-
-/* TODO
-
-Adicionar validação de cpf no supabase
-
-*/
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -25,7 +19,10 @@ export default function Login() {
       return;
     }
 
-    router.push("/homeDriver");
+    else{
+          router.push("/homeDriver");
+    }
+
   }
 
 
