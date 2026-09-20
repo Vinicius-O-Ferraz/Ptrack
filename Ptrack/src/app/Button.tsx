@@ -20,11 +20,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 8,
     marginTop: 20,
+    width: 350,
+    height: 50,
   },
 
   text: {
     color: "#000000",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign:"center"
   },
 });
