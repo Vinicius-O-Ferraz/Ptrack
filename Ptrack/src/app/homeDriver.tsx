@@ -5,11 +5,13 @@ import Button from "./Button";
 export default function homeDriver() {
 
   function adicionarCaixas() {
-    router.push("/adicionarCaixas");
+    // router.push("/adicionarCaixas");
+    router.push("./todo");
   }
 
   function adicionarNumeroRemessa() {
-    router.push("/adicionarNumeroRemessa");
+    router.push("./todo");
+    // router.push("/adicionarNumeroRemessa");
   }
 
   return (
@@ -23,9 +25,6 @@ export default function homeDriver() {
       <Text style={styles.text}>
           TRANSPORTADOR
       </Text>
-
-     
-
       
       <Button
         title="Adicionar número de remessa"
