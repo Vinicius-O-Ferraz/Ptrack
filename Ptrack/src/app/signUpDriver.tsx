@@ -22,7 +22,9 @@ export default function primeiroAcesso() {
         options: {
             data: {
                 nome: nome,
-                cpf: cpf
+                cpf: cpf,
+                role: "motorista"
+                // role: "motorista" é necessário para ativar o trigger
             }
         }
     });

@@ -8,44 +8,38 @@ const supabase = createClient(
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-/*
-
-TODO 
-
-Falta fazer ajustes no trigger do motorista para receber apenas os registros com o role de motorista, se o role for hemobrás, não será utilizado
-
-*/
 
 export default function primeiroAcesso() {
   const [nome, setNome] = useState<string>("");
-  const [codMatricula, setcodMatricula] = useState<string>("");
+  const [numMatricula, setNumMatricula] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
 
-  async function cadastrar( email: string, senha: string) {
+  async function cadastrar(nome: string, numMatricula: string, email: string, senha: string) {
     const { data, error } = await supabase.auth.signUp({
         email: email,
         password: senha,
         options: {
             data: {
                 nome: nome,
-                codMatricula: codMatricula
+                numMatricula: numMatricula,
             }
         }
     });
 
     if (error) {
-        console.error("Erro ao cadastrar funcionário:", error.message);
+        console.error("Erro ao cadastrar motorista:", error.message);
         return {
             sucesso: false,
             erro: error.message
         };
     }
 
-    //Atalho, navegar para home sem autenticar
-    router.push("./homeHb")
+    else{
+      router.push("./homeHB")
+    }
 
-    console.log("Funcionário cadastrado com sucesso!");
+    console.log("Usuário cadastrado com sucesso!");
     console.log("Usuário:", data.user);
 
     return {
@@ -69,14 +63,14 @@ export default function primeiroAcesso() {
         onChangeText={setNome}
       />
 
-      <Text>CPF</Text>
+      <Text>numMatricula</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Digite seu código de matrícula"
+        placeholder="Digite seu número de matrícula"
         keyboardType="numeric"
-        value={codMatricula}
-        onChangeText={setcodMatricula}
+        value={numMatricula}
+        onChangeText={setNumMatricula}
       />
 
       <Text>E-mail</Text>
@@ -104,14 +98,9 @@ export default function primeiroAcesso() {
 
       <Button
         title="Cadastrar"
-          onPress={() => cadastrar(email, senha)}
+          onPress={() => cadastrar(nome, numMatricula, email, senha)}
       />
 
-      <Pressable onPress={primeiroAcesso}>
-        <Text style={{ color: "blue" }}>
-          Primeiro acesso? Clique aqui para se cadastrar.
-        </Text>
-      </Pressable>
     </View>
   );
 }

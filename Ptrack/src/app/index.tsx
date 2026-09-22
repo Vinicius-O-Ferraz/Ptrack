@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default function Index() {
 
   function souFuncionario() {
-    router.push("/homeHb");
+    router.push("/loginHB");
   }
 
   function souMotorista() {
