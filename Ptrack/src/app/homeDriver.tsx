@@ -10,8 +10,8 @@ export default function homeDriver() {
   }
 
   function adicionarNumeroRemessa() {
-    router.push("./todo");
-    // router.push("/adicionarNumeroRemessa");
+    // router.push("./todo");
+    router.push("/adicionarNumeroRemessa");
   }
 
   return (

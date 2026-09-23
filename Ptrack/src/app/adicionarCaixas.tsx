@@ -6,9 +6,11 @@ export default function adicionarCaixas() {
 
   return (
     <View style={styles.container}>
-        <text style={styles.text}>
-        Adicionar caixas para transporte
+      <text style={styles.text}>
+        Rotas disponíveis
       </text>
+
+      
 
 
     </View>
@@ -20,7 +22,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f7c23e",
+    backgroundColor: "#244CA4",
   },
 
   logo: {
