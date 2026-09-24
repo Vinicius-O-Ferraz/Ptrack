@@ -8,8 +8,10 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { createClient } from "@supabase/supabase-js";
+import { router } from "expo-router";
 
 // ======================================================
 // SUPABASE
@@ -20,311 +22,157 @@ const supabase = createClient(
 );
 
 // ======================================================
-// NOMINATIM
+// TIPO DA ROTA
 // ======================================================
-async function obterCoordenadas(endereco: string) {
-  const url = new URL("https://nominatim.openstreetmap.org/search");
-  url.searchParams.set("q", endereco);
-  url.searchParams.set("format", "jsonv2");
-  url.searchParams.set("limit", "1");
-
-  const resposta = await fetch(url, {
-    headers: {
-      "User-Agent": "PTrack/1.0 (seu-email@exemplo.com)",
-    },
-  });
-
-  if (!resposta.ok) {
-    throw new Error(
-      `Erro no Nominatim: ${resposta.status} ${resposta.statusText}`
-    );
-  }
-
-  const resultados = await resposta.json();
-
-  if (resultados.length === 0) {
-    throw new Error(`Não foi possível encontrar o endereço: ${endereco}`);
-  }
-
-  return {
-    lat: Number(resultados[0].lat),
-    long: Number(resultados[0].lon),
-  };
-}
-
-// ======================================================
-// ESPERA
-// ======================================================
-function esperar(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// ======================================================
-// GERA ID DA ROTA
-// ======================================================
-function gerarIdRota() {
-  const numero = Math.floor(Math.random() * 1000000);
-  return `R${numero.toString().padStart(7, "0")}`;
-}
-
-// ======================================================
-// CRIAÇÃO DA ROTA
-// ======================================================
-async function criarRota(nome_rota: string, enderecos: string[]) {
-  // --------------------------------------------------
-  // 1. Gera o ID da rota
-  // --------------------------------------------------
-  const id_rota = gerarIdRota();
-
-  // --------------------------------------------------
-  // 2. Cria a rota no Supabase
-  // --------------------------------------------------
-  const { data: rota, error: erroRota } = await supabase
-    .from("rota")
-    .insert({
-      id_rota: id_rota,
-      nome_rota: nome_rota,
-    })
-    .select()
-    .single();
-
-  if (erroRota) {
-    throw new Error(`Erro ao criar rota: ${erroRota.message}`);
-  }
-
-  // --------------------------------------------------
-  // 3. Obtém as coordenadas dos endereços
-  // --------------------------------------------------
-  const pontos = [];
-
-  for (let i = 0; i < enderecos.length; i++) {
-    const endereco = enderecos[i].trim();
-    console.log(`Obtendo coordenadas do ponto ${i + 1}: ${endereco}`);
-
-    const coordenadas = await obterCoordenadas(endereco);
-    const ordem = i + 1;
-
-    pontos.push({
-      id_ponto: `${id_rota}-P${ordem}`,
-      id_rota: id_rota,
-      ordem_ponto_na_rota: ordem,
-      endereco: endereco,
-      lat: coordenadas.lat,
-      long: coordenadas.long,
-    });
-
-    // ------------------------------------------------
-    // Nominatim recomenda limitar as requisições.
-    // ------------------------------------------------
-    if (i < enderecos.length - 1) {
-      await esperar(1000);
-    }
-  }
-
-  // --------------------------------------------------
-  // 4. Insere os pontos no Supabase
-  // --------------------------------------------------
-  const { data: pontosInseridos, error: erroPontos } = await supabase
-    .from("pontos_rota")
-    .insert(pontos)
-    .select();
-
-  if (erroPontos) {
-    throw new Error(
-      `Erro ao criar pontos da rota: ${erroPontos.message}`
-    );
-  }
-
-  // --------------------------------------------------
-  // 5. Retorna os dados criados
-  // --------------------------------------------------
-  return {
-    rota: rota,
-    pontos: pontosInseridos,
-  };
-}
+type Rota = {
+  id_rota: string;
+  nome_rota: string;
+};
 
 // ======================================================
 // TELA
 // ======================================================
-export default function CriarRota() {
-  const [nomeRota, setNomeRota] = useState("");
-  const [quantidadePontos, setQuantidadePontos] = useState("");
-  const [enderecos, setEnderecos] = useState<string[]>([]);
-  const [criandoRota, setCriandoRota] = useState(false);
+export default function adicionarNumeroRemessa() {
+  const [nomeBusca, setNomeBusca] = useState("");
+  const [rotas, setRotas] = useState<Rota[]>([]);
+  const [carregando, setCarregando] = useState(false);
 
-  // ====================================================
-  // CRIA OS CAMPOS DE ENDEREÇO
-  // ====================================================
-  function definirQuantidadePontos() {
-    const quantidade = Number(quantidadePontos);
-
-    if (!Number.isInteger(quantidade) || quantidade <= 0) {
-      Alert.alert(
-        "Quantidade inválida",
-        "Informe uma quantidade de pontos maior que zero."
-      );
-      return;
-    }
-
-    const novosEnderecos = Array.from(
-      { length: quantidade },
-      (_, index) => enderecos[index] ?? ""
-    );
-
-    setEnderecos(novosEnderecos);
+  // ======================================================
+  // IR PARA CADASTRO DE ROTAS
+  // ======================================================
+  function cadastrarRotas() {
+    router.push("/cadastrarRotas");
   }
 
-  // ====================================================
-  // ALTERA UM ENDEREÇO
-  // ====================================================
-  function alterarEndereco(index: number, endereco: string) {
-    const novosEnderecos = [...enderecos];
-    novosEnderecos[index] = endereco;
-    setEnderecos(novosEnderecos);
-  }
+  // ======================================================
+  // BUSCAR ROTAS
+  // ======================================================
+  async function buscarRotas() {
+    setCarregando(true);
 
-  // ====================================================
-  // CRIA A ROTA
-  // ====================================================
-  async function executarCriacaoRota() {
-    // -----------------------------------------------
-    // Validação do nome
-    // -----------------------------------------------
-    if (!nomeRota.trim()) {
-      Alert.alert("Erro", "Digite o nome da rota.");
-      return;
-    }
+    const { data, error } = await supabase
+      .from("rota")
+      .select("id_rota, nome_rota")
+      .ilike("nome_rota", `%${nomeBusca}%`)
+      .order("nome_rota", { ascending: true });
 
-    // -----------------------------------------------
-    // Validação da quantidade
-    // -----------------------------------------------
-    if (enderecos.length === 0) {
-      Alert.alert("Erro", "Informe a quantidade de pontos da rota.");
-      return;
-    }
+    setCarregando(false);
 
-    // -----------------------------------------------
-    // Verifica endereços vazios
-    // -----------------------------------------------
-    const existeEnderecoVazio = enderecos.some(
-      (endereco) => !endereco.trim()
-    );
-
-    if (existeEnderecoVazio) {
-      Alert.alert("Erro", "Preencha todos os endereços.");
-      return;
-    }
-
-    setCriandoRota(true);
-
-    try {
-      console.log("Iniciando criação da rota...");
-
-      const resultado = await criarRota(nomeRota.trim(), enderecos);
-
-      console.log("Rota criada:", resultado.rota);
-      console.log("Pontos criados:", resultado.pontos);
+    if (error) {
+      console.error("Erro ao buscar rotas:", error);
 
       Alert.alert(
-        "Sucesso",
-        `Rota ${resultado.rota.id_rota} criada com sucesso!\n\n${resultado.pontos.length} pontos foram cadastrados.`
+        "Erro",
+        "Não foi possível buscar as rotas."
       );
 
-      // Limpa o formulário
-      setNomeRota("");
-      setQuantidadePontos("");
-      setEnderecos([]);
-    } catch (erro: any) {
-      console.error("Erro ao criar rota:", erro);
-      Alert.alert(
-        "Erro ao criar rota",
-        erro.message ?? "Ocorreu um erro inesperado."
-      );
-    } finally {
-      setCriandoRota(false);
+      return;
     }
+
+    setRotas(data || []);
   }
 
-  // ====================================================
-  // INTERFACE
-  // ====================================================
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>Criar nova rota</Text>
 
-      {/* ==============================================
-          NOME DA ROTA
-      ============================================== */}
-      <Text style={styles.label}>Nome da rota</Text>
+      {/* ==================================================
+          TÍTULO
+      ================================================== */}
+      <Text style={styles.titulo}>
+        Buscar Rota
+      </Text>
+
+      {/* ==================================================
+          CAMPO DE BUSCA
+      ================================================== */}
+      <Text style={styles.label}>
+        Nome da rota
+      </Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Ex.: Rota Recife - Hemobrás"
-        value={nomeRota}
-        onChangeText={setNomeRota}
-        editable={!criandoRota}
+        placeholder="Digite o nome da rota"
+        value={nomeBusca}
+        onChangeText={setNomeBusca}
       />
 
-      {/* ==============================================
-          QUANTIDADE DE PONTOS
-      ============================================== */}
-      <Text style={styles.label}>Quantidade de pontos</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Ex.: 4"
-        keyboardType="numeric"
-        value={quantidadePontos}
-        onChangeText={setQuantidadePontos}
-        editable={!criandoRota}
-      />
-
+      {/* ==================================================
+          BOTÃO BUSCAR
+      ================================================== */}
       <Button
-        title="Definir pontos"
-        onPress={definirQuantidadePontos}
-        disabled={criandoRota}
+        title="Buscar"
+        onPress={buscarRotas}
       />
 
-      {/* ==============================================
-          ENDEREÇOS
-      ============================================== */}
-      {enderecos.length > 0 && (
-        <View style={styles.pontosContainer}>
-          <Text style={styles.subtitulo}>Pontos da rota</Text>
+      {/* ==================================================
+          CARREGAMENTO
+      ================================================== */}
+      {carregando && (
+        <View style={styles.carregando}>
+          <ActivityIndicator size="large" />
 
-          {enderecos.map((endereco, index) => (
-            <View key={index} style={styles.ponto}>
-              <Text style={styles.label}>Ponto {index + 1}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={`Endereço do ponto ${index + 1}`}
-                value={endereco}
-                onChangeText={(texto) => alterarEndereco(index, texto)}
-                editable={!criandoRota}
-                multiline
-              />
-            </View>
-          ))}
+          <Text style={styles.textoCarregando}>
+            Buscando rotas...
+          </Text>
         </View>
       )}
 
-      {/* ==============================================
-          BOTÃO CRIAR ROTA
-      ============================================== */}
-      {enderecos.length > 0 && (
-        <View style={styles.botaoCriar}>
-          {criandoRota ? (
-            <View style={styles.carregando}>
-              <ActivityIndicator size="large" />
-              <Text style={styles.textoCarregando}>Criando rota...</Text>
-              <Text style={styles.textoAviso}>
-                Os endereços estão sendo convertidos em coordenadas.
+      {/* ==================================================
+          RESULTADOS
+      ================================================== */}
+      {!carregando && rotas.length > 0 && (
+        <View style={styles.resultados}>
+
+          <Text style={styles.subtitulo}>
+            Rotas encontradas
+          </Text>
+
+          {rotas.map((rota) => (
+            <Pressable
+              key={rota.id_rota}
+              style={styles.rota}
+              onPress={() => {
+                console.log("Rota selecionada:", rota);
+              }}
+            >
+
+              <Text style={styles.nomeRota}>
+                {rota.nome_rota}
               </Text>
-            </View>
-          ) : (
-            <Button title="Criar rota" onPress={executarCriacaoRota} />
-          )}
+
+              <Text style={styles.idRota}>
+                ID: {rota.id_rota}
+              </Text>
+
+            </Pressable>
+          ))}
+
         </View>
       )}
+
+      {/* ==================================================
+          NENHUM RESULTADO
+      ================================================== */}
+      {!carregando &&
+        rotas.length === 0 &&
+        nomeBusca !== "" && (
+          <Text style={styles.textoAviso}>
+            Nenhuma rota encontrada.
+          </Text>
+        )}
+
+      {/* ==================================================
+          CADASTRAR NOVA ROTA
+      ================================================== */}
+      <View style={styles.botaoCriar}>
+
+        <Button
+          title="Cadastrar Rota"
+          onPress={cadastrarRotas}
+        />
+
+      </View>
+
     </ScrollView>
   );
 }
@@ -338,23 +186,27 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f7c23e",
   },
+
   titulo: {
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 25,
     textAlign: "center",
   },
+
   subtitulo: {
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 25,
     marginBottom: 15,
   },
+
   label: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 6,
   },
+
   input: {
     width: "100%",
     minHeight: 45,
@@ -364,29 +216,54 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 15,
   },
-  pontosContainer: {
-    marginTop: 10,
-  },
-  ponto: {
-    marginBottom: 5,
-  },
-  botaoCriar: {
-    marginTop: 25,
-    marginBottom: 40,
-  },
+
   carregando: {
     alignItems: "center",
     padding: 20,
     backgroundColor: "#ffffff",
     borderRadius: 8,
+    marginTop: 15,
   },
+
   textoCarregando: {
     fontSize: 18,
     fontWeight: "bold",
     marginTop: 10,
   },
+
+  resultados: {
+    marginTop: 10,
+  },
+
+  rota: {
+    backgroundColor: "#ffffff",
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+
+    // Sombra no Android
+    elevation: 3,
+  },
+
+  nomeRota: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  idRota: {
+    fontSize: 14,
+    marginTop: 5,
+    color: "#555555",
+  },
+
   textoAviso: {
     textAlign: "center",
-    marginTop: 8,
+    marginTop: 15,
+    fontSize: 16,
+  },
+
+  botaoCriar: {
+    marginTop: 25,
+    marginBottom: 40,
   },
 });
