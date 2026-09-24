@@ -142,7 +142,14 @@ export default function adicionarNumeroRemessa() {
 
               <View style={{ flexDirection: "row", gap: 20 }}>
                 <Pressable
-                  onPress={() => router.push("/todo")}
+                   onPress={() =>
+                    router.push({
+                      pathname: "/alterarRota",
+                      params: {
+                        id_rota: rota.id_rota,
+                      },
+                    })
+                  }
                 >
                   <Text>Alterar</Text>
                 </Pressable>
