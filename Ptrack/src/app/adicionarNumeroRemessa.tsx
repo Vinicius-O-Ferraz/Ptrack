@@ -128,14 +128,10 @@ export default function adicionarNumeroRemessa() {
           </Text>
 
           {rotas.map((rota) => (
-            <Pressable
+            <View
               key={rota.id_rota}
               style={styles.rota}
-              onPress={() => {
-                console.log("Rota selecionada:", rota);
-              }}
             >
-
               <Text style={styles.nomeRota}>
                 {rota.nome_rota}
               </Text>
@@ -144,7 +140,20 @@ export default function adicionarNumeroRemessa() {
                 ID: {rota.id_rota}
               </Text>
 
-            </Pressable>
+              <View style={{ flexDirection: "row", gap: 20 }}>
+                <Pressable
+                  onPress={() => router.push("/todo")}
+                >
+                  <Text>Alterar</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => router.push("/todo")}
+                >
+                  <Text>Usar</Text>
+                </Pressable>
+              </View>
+            </View>
           ))}
 
         </View>
