@@ -155,7 +155,7 @@ export default function adicionarNumeroRemessa() {
                 </Pressable>
 
                 <Pressable
-                  onPress={() => router.push("/todo")}
+                  onPress={() => router.push("/adicionarNumeroRemessaCadastro")}
                 >
                   <Text>Usar</Text>
                 </Pressable>
