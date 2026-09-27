@@ -5,8 +5,8 @@ import Button from "./Button";
 export default function homeDriver() {
 
   function adicionarCaixas() {
-    // router.push("/adicionarCaixas");
-    router.push("./todo");
+    router.push("/adicionarCaixas");
+    // router.push("./todo");
   }
 
   function adicionarNumeroRemessa() {
