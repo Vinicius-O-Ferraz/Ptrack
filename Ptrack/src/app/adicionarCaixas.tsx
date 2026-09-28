@@ -99,7 +99,7 @@ export default function BuscarDocumentoRemessa() {
 
   function comecarLeitura(documento: DocumentoRemessa) {
     router.push({
-      pathname: "/todo",
+      pathname: "/leituraTags",
       params: {
         idDocumento: documento.id_documento.toString(),
         placa: documento.placa,

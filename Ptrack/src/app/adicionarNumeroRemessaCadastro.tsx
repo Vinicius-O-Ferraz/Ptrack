@@ -26,9 +26,10 @@ const supabase = createClient(
 // ======================================================
 export default function CadastrarTags() {
   // ID da rota recebido da tela anterior
-  const { idRota } = useLocalSearchParams<{
-    idRota: string;
-  }>();
+  const { idRota, cpfMotorista } = useLocalSearchParams<{
+  idRota: string;
+  cpfMotorista: string;
+}>();
 
   const [numeroRemessa, setNumeroRemessa] = useState("");
   const [caixasPC, setCaixasPC] = useState("");
@@ -174,7 +175,7 @@ export default function CadastrarTags() {
     Alert.alert("Sucesso", "Documento de remessa cadastrado!");
 
     router.push({
-      pathname: "/todo",
+      pathname: "/leituraTags",
       params: {
         numeroRemessa,
         caixasPC,
