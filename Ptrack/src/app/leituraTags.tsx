@@ -145,17 +145,7 @@ export default function LerTags() {
   }
 
 
-  /*
-   * Interpreta o conteúdo gravado
-   * na tag NFC.
-   *
-   * Exemplo:
-   *
-   * {
-   *   "tag": "0000000000001",
-   *   "tipo": "PFC"
-   * }
-   */
+
   function obterDadosTag(
     tagNfc: any
   ): DadosTag | null {

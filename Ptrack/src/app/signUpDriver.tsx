@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import { View, Text, TextInput, Button, StyleSheet, Pressable } from "react-native";
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-    process.env.EXPO_PUBLIC_SUPABASE_URL!,
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
+import {supabase} from "./supabaseClient";
 
 
 export default function primeiroAcesso() {
@@ -15,39 +10,45 @@ export default function primeiroAcesso() {
   const [email, setEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
 
-  async function cadastrar(nome: string, cpf: string, email: string, senha: string) {
-    const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: senha,
-        options: {
-            data: {
-                nome: nome,
-                cpf: cpf,
-                role: "motorista"
-                // role: "motorista" é necessário para ativar o trigger
-            }
-        }
-    });
+async function cadastrar(
+  nome: string,
+  cpf: string,
+  email: string,
+  senha: string
+) {
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: senha,
+    options: {
+      data: {
+        nome: nome,
+        cpf: cpf,
+        role: "motorista",
+      },
+    },
+  });
 
-    if (error) {
-        console.error("Erro ao cadastrar motorista:", error.message);
-        return {
-            sucesso: false,
-            erro: error.message
-        };
-    }
-
-    else{
-      router.push("./homeDriver")
-    }
-
-    console.log("Motorista cadastrado com sucesso!");
-    console.log("Usuário:", data.user);
+  if (error) {
+    console.error("ERRO COMPLETO:", error);
+    console.error("ERRO MESSAGE:", error.message);
+    console.error("ERRO CODE:", error.code);
+    console.error("ERRO STATUS:", error.status);
 
     return {
-        sucesso: true,
-        usuario: data.user
+      sucesso: false,
+      erro: error.message,
     };
+  }
+
+  console.log("Motorista cadastrado com sucesso!");
+  console.log("Usuário:", data.user);
+
+  router.push("./homeDriver");
+
+  return {
+    sucesso: true,
+    usuario: data.user,
+  };
 }
 
 

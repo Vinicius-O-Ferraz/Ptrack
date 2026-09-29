@@ -10,17 +10,8 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
-
-import { createClient } from "@supabase/supabase-js";
 import { useLocalSearchParams, router } from "expo-router";
-
-// ======================================================
-// SUPABASE
-// ======================================================
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
+import {supabase} from "./supabaseClient";
 
 // ======================================================
 // TIPO DO PONTO

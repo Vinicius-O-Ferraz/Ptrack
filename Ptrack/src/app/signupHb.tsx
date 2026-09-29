@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import { View, Text, TextInput, Button, StyleSheet, Pressable } from "react-native";
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-    process.env.EXPO_PUBLIC_SUPABASE_URL!,
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
+import {supabase} from "./supabaseClient";
 
 
 export default function primeiroAcesso() {

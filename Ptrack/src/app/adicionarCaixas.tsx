@@ -9,17 +9,10 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { createClient } from "@supabase/supabase-js";
+import {supabase} from "./supabaseClient";
 import { router } from "expo-router";
 
-// ======================================================
-// SUPABASE
-// ======================================================
 
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // ======================================================
 // TIPO DO DOCUMENTO
