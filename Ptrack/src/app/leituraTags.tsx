@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   View,
@@ -14,15 +14,8 @@ import NfcManager, {
   Ndef,
 } from "react-native-nfc-manager";
 
-import { createClient } from "@supabase/supabase-js";
-
 import { useLocalSearchParams } from "expo-router";
-
-
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from "./supabaseClient";
 
 
 type QuantidadesEsperadas = {
@@ -45,7 +38,10 @@ export default function LerTags() {
   }>();
 
 
-  // Quantidades que estão no documento
+  // ==========================================
+  // QUANTIDADES ESPERADAS
+  // ==========================================
+
   const [esperado, setEsperado] =
     useState<QuantidadesEsperadas>({
       qtd_pic: 0,
@@ -54,25 +50,57 @@ export default function LerTags() {
     });
 
 
-  // Quantidades encontradas durante a leitura
+  // ==========================================
+  // QUANTIDADES LIDAS
+  // ==========================================
+
   const [lidoPIC, setLidoPIC] = useState(0);
   const [lidoPFC, setLidoPFC] = useState(0);
   const [lidoPC, setLidoPC] = useState(0);
 
 
-  // Identificadores das tags já lidas
-  const [tagsLidas, setTagsLidas] = useState<string[]>([]);
+  // ==========================================
+  // TAGS JÁ LIDAS
+  // ==========================================
 
+  const [tagsLidas, setTagsLidas] =
+    useState<string[]>([]);
+
+
+  // ==========================================
+  // ESTADO DA LEITURA
+  // ==========================================
 
   const [lendo, setLendo] = useState(false);
 
 
   /*
-   * Ao abrir a tela:
-   *
-   * 1. Busca as quantidades do documento
-   * 2. Inicializa o NFC
+   * useRef é utilizado para que o loop de leitura
+   * consiga saber imediatamente se o usuário
+   * apertou o botão novamente.
    */
+  const lendoRef = useRef(false);
+
+
+  /*
+   * Também mantemos os dados em refs.
+   *
+   * Isso garante que, no momento de finalizar,
+   * teremos os valores mais recentes mesmo que
+   * uma atualização de estado ainda esteja sendo
+   * processada pelo React.
+   */
+  const tagsLidasRef = useRef<string[]>([]);
+
+  const lidoPICRef = useRef(0);
+  const lidoPFCRef = useRef(0);
+  const lidoPCRef = useRef(0);
+
+
+  // ==========================================
+  // INICIALIZAÇÃO
+  // ==========================================
+
   useEffect(() => {
 
     buscarDocumento();
@@ -80,17 +108,21 @@ export default function LerTags() {
     NfcManager.start();
 
     return () => {
+
+      lendoRef.current = false;
+
       NfcManager.cancelTechnologyRequest()
         .catch(() => {});
+
     };
 
   }, []);
 
 
-  /*
-   * Busca as quantidades esperadas
-   * no documento de remessa.
-   */
+  // ==========================================
+  // BUSCAR DOCUMENTO
+  // ==========================================
+
   async function buscarDocumento() {
 
     if (!idDocumento) {
@@ -145,6 +177,9 @@ export default function LerTags() {
   }
 
 
+  // ==========================================
+  // INTERPRETAR TAG NFC
+  // ==========================================
 
   function obterDadosTag(
     tagNfc: any
@@ -195,9 +230,13 @@ export default function LerTags() {
 
 
       /*
-       * Aceita somente os tipos
-       * existentes no sistema.
+       * Aceita somente:
+       *
+       * PIC
+       * PFC
+       * PC
        */
+
       if (
         tipo !== "PIC" &&
         tipo !== "PFC" &&
@@ -231,202 +270,26 @@ export default function LerTags() {
   }
 
 
-  /*
-   * Realiza uma leitura NFC.
-   */
-  async function lerTag() {
+  // ==========================================
+  // PROCESSAR UMA TAG
+  // ==========================================
 
-    if (lendo) {
-      return;
-    }
+  function processarTag(
+    dados: DadosTag
+  ) {
 
-
-    try {
-
-      setLendo(true);
-
-
-      /*
-       * Solicita uma tag NFC
-       * compatível com NDEF.
-       */
-      await NfcManager.requestTechnology(
-        NfcTech.Ndef
-      );
-
-
-      /*
-       * Obtém a tag aproximada
-       * do celular.
-       */
-      const tagNfc =
-        await NfcManager.getTag();
-
-
-      if (!tagNfc) {
-
-        Alert.alert(
-          "Erro",
-          "Não foi possível ler a tag."
-        );
-
-        return;
-
-      }
-
-
-      /*
-       * Extrai o JSON da tag.
-       */
-      const dados =
-        obterDadosTag(tagNfc);
-
-
-      if (!dados) {
-
-        Alert.alert(
-          "Tag inválida",
-          "Não foi possível identificar o identificador e o tipo da tag."
-        );
-
-        return;
-
-      }
-
-
-      /*
-       * Verifica se essa tag
-       * já foi lida anteriormente.
-       */
-      if (
-        tagsLidas.includes(
-          dados.tag
-        )
-      ) {
-
-        Alert.alert(
-          "Tag já lida",
-          `A tag ${dados.tag} já foi contabilizada.`
-        );
-
-        return;
-
-      }
-
-
-      /*
-       * Adiciona a tag à lista
-       * de tags já processadas.
-       */
-      setTagsLidas(
-        (lista) => [
-          ...lista,
-          dados.tag,
-        ]
-      );
-
-
-      /*
-       * Incrementa o contador
-       * correspondente ao tipo.
-       */
-      if (dados.tipo === "PIC") {
-
-        setLidoPIC(
-          (valor) => valor + 1
-        );
-
-      }
-
-
-      if (dados.tipo === "PFC") {
-
-        setLidoPFC(
-          (valor) => valor + 1
-        );
-
-      }
-
-
-      if (dados.tipo === "PC") {
-
-        setLidoPC(
-          (valor) => valor + 1
-        );
-
-      }
-
-
-      Alert.alert(
-        "Tag lida",
-        `Identificador: ${dados.tag}\nTipo: ${dados.tipo}`
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao ler NFC:",
-        error
-      );
-
-
-    } finally {
-
-      setLendo(false);
-
-
-      /*
-       * Libera a comunicação NFC
-       * para a próxima leitura.
-       */
-      await NfcManager
-        .cancelTechnologyRequest()
-        .catch(() => {});
-
-    }
-
-  }
-
-
-  /*
-   * Compara as quantidades
-   * esperadas com as lidas.
-   */
-  function finalizarLeitura() {
-
-    const diferencaPIC =
-      lidoPIC !== esperado.qtd_pic;
-
-    const diferencaPFC =
-      lidoPFC !== esperado.qtd_pfc;
-
-    const diferencaPC =
-      lidoPC !== esperado.qtd_pc;
-
+    /*
+     * Verifica se a tag já foi lida.
+     */
 
     if (
-      diferencaPIC ||
-      diferencaPFC ||
-      diferencaPC
+      tagsLidasRef.current.includes(
+        dados.tag
+      )
     ) {
 
-      Alert.alert(
-        "Diferença encontrada",
-
-        `Documento: ${idDocumento}
-
-Quantidade esperada:
-
-PIC: ${esperado.qtd_pic}
-PFC: ${esperado.qtd_pfc}
-PC: ${esperado.qtd_pc}
-
-Quantidade lida:
-
-PIC: ${lidoPIC}
-PFC: ${lidoPFC}
-PC: ${lidoPC}`
+      console.log(
+        `Tag ${dados.tag} já foi lida.`
       );
 
       return;
@@ -435,17 +298,442 @@ PC: ${lidoPC}`
 
 
     /*
-     * Caso todas as quantidades
-     * estejam corretas.
+     * Adiciona o identificador
+     * à lista de tags lidas.
      */
-    Alert.alert(
-      "Leitura concluída",
 
-      "Todas as tags esperadas foram lidas corretamente."
+    tagsLidasRef.current.push(
+      dados.tag
+    );
+
+
+    setTagsLidas(
+      [...tagsLidasRef.current]
+    );
+
+
+    /*
+     * Incrementa o contador
+     * de acordo com o tipo.
+     */
+
+    if (dados.tipo === "PIC") {
+
+      lidoPICRef.current += 1;
+
+      setLidoPIC(
+        lidoPICRef.current
+      );
+
+    }
+
+
+    if (dados.tipo === "PFC") {
+
+      lidoPFCRef.current += 1;
+
+      setLidoPFC(
+        lidoPFCRef.current
+      );
+
+    }
+
+
+    if (dados.tipo === "PC") {
+
+      lidoPCRef.current += 1;
+
+      setLidoPC(
+        lidoPCRef.current
+      );
+
+    }
+
+
+    console.log(
+      "Tag lida:",
+      dados.tag,
+      dados.tipo
     );
 
   }
 
+
+  // ==========================================
+  // LOOP DE LEITURA NFC
+  // ==========================================
+
+  async function iniciarLeituraContinua() {
+
+    /*
+     * Enquanto o usuário não apertar
+     * novamente o botão, o loop continua.
+     */
+
+    while (lendoRef.current) {
+
+      try {
+
+        /*
+         * Solicita uma tag NFC.
+         */
+
+        await NfcManager.requestTechnology(
+          NfcTech.Ndef
+        );
+
+
+        /*
+         * Verifica se o usuário apertou
+         * o botão enquanto o NFC estava
+         * esperando uma tag.
+         */
+
+        if (!lendoRef.current) {
+
+          await NfcManager
+            .cancelTechnologyRequest()
+            .catch(() => {});
+
+          break;
+
+        }
+
+
+        /*
+         * Obtém a tag.
+         */
+
+        const tagNfc =
+          await NfcManager.getTag();
+
+
+        if (!tagNfc) {
+
+          continue;
+
+        }
+
+
+        /*
+         * Interpreta o conteúdo da tag.
+         */
+
+        const dados =
+          obterDadosTag(tagNfc);
+
+
+        if (!dados) {
+
+          console.log(
+            "Tag inválida."
+          );
+
+        } else {
+
+          /*
+           * Processa a tag.
+           *
+           * Se já tiver sido lida,
+           * ela será ignorada.
+           */
+
+          processarTag(dados);
+
+        }
+
+      } catch (error) {
+
+        /*
+         * Quando o usuário aperta o botão
+         * novamente, cancelTechnologyRequest()
+         * provoca uma interrupção do request.
+         *
+         * Nesse caso não precisamos mostrar
+         * erro para o usuário.
+         */
+
+        if (lendoRef.current) {
+
+          console.error(
+            "Erro durante leitura NFC:",
+            error
+          );
+
+        }
+
+      } finally {
+
+        /*
+         * Libera a tecnologia NFC depois
+         * de cada leitura.
+         */
+
+        await NfcManager
+          .cancelTechnologyRequest()
+          .catch(() => {});
+
+      }
+
+    }
+
+  }
+
+
+  // ==========================================
+  // BOTÃO LER / PARAR
+  // ==========================================
+
+  function alternarLeitura() {
+
+    /*
+     * ----------------------------------------
+     * SEGUNDO TOQUE
+     * ----------------------------------------
+     *
+     * Se já estiver lendo, o segundo toque
+     * encerra a leitura.
+     */
+
+    if (lendoRef.current) {
+
+      /*
+       * Primeiro sinalizamos para o loop
+       * que ele deve parar.
+       */
+
+      lendoRef.current = false;
+
+      setLendo(false);
+
+
+      /*
+       * Cancela uma eventual espera por
+       * uma nova tag NFC.
+       */
+
+      NfcManager
+        .cancelTechnologyRequest()
+        .catch(() => {});
+
+
+      /*
+       * Depois de parar, verifica a
+       * transação.
+       */
+
+      finalizarLeitura();
+
+      return;
+
+    }
+
+
+    /*
+     * ----------------------------------------
+     * PRIMEIRO TOQUE
+     * ----------------------------------------
+     *
+     * Começa uma nova leitura.
+     */
+
+
+    /*
+     * IMPORTANTE:
+     *
+     * Ao iniciar uma nova leitura,
+     * esquecemos completamente as tags
+     * da leitura anterior.
+     */
+
+    tagsLidasRef.current = [];
+
+    lidoPICRef.current = 0;
+    lidoPFCRef.current = 0;
+    lidoPCRef.current = 0;
+
+
+    setTagsLidas([]);
+
+    setLidoPIC(0);
+    setLidoPFC(0);
+    setLidoPC(0);
+
+
+    /*
+     * Ativa o modo de leitura.
+     */
+
+    lendoRef.current = true;
+
+    setLendo(true);
+
+
+    /*
+     * Inicia o loop de leitura.
+     */
+
+    iniciarLeituraContinua();
+
+  }
+
+
+  // ==========================================
+  // FINALIZAR LEITURA
+  // ==========================================
+
+  function finalizarLeitura() {
+
+    const quantidadePIC =
+      lidoPICRef.current;
+
+    const quantidadePFC =
+      lidoPFCRef.current;
+
+    const quantidadePC =
+      lidoPCRef.current;
+
+
+    const diferencaPIC =
+      quantidadePIC -
+      esperado.qtd_pic;
+
+
+    const diferencaPFC =
+      quantidadePFC -
+      esperado.qtd_pfc;
+
+
+    const diferencaPC =
+      quantidadePC -
+      esperado.qtd_pc;
+
+
+    /*
+     * Verifica se existe alguma
+     * divergência.
+     */
+
+    if (
+      diferencaPIC !== 0 ||
+      diferencaPFC !== 0 ||
+      diferencaPC !== 0
+    ) {
+
+      let mensagem =
+        `Documento: ${idDocumento}\n\n`;
+
+
+      mensagem +=
+        "Divergências encontradas:\n\n";
+
+
+      /*
+       * PIC
+       */
+
+      if (diferencaPIC !== 0) {
+
+        if (diferencaPIC > 0) {
+
+          mensagem +=
+            `PIC: ${diferencaPIC} tag(s) a mais.\n` +
+            `Esperado: ${esperado.qtd_pic}\n` +
+            `Lido: ${quantidadePIC}\n\n`;
+
+        } else {
+
+          mensagem +=
+            `PIC: ${Math.abs(diferencaPIC)} tag(s) a menos.\n` +
+            `Esperado: ${esperado.qtd_pic}\n` +
+            `Lido: ${quantidadePIC}\n\n`;
+
+        }
+
+      }
+
+
+      /*
+       * PFC
+       */
+
+      if (diferencaPFC !== 0) {
+
+        if (diferencaPFC > 0) {
+
+          mensagem +=
+            `PFC: ${diferencaPFC} tag(s) a mais.\n` +
+            `Esperado: ${esperado.qtd_pfc}\n` +
+            `Lido: ${quantidadePFC}\n\n`;
+
+        } else {
+
+          mensagem +=
+            `PFC: ${Math.abs(diferencaPFC)} tag(s) a menos.\n` +
+            `Esperado: ${esperado.qtd_pfc}\n` +
+            `Lido: ${quantidadePFC}\n\n`;
+
+        }
+
+      }
+
+
+      /*
+       * PC
+       */
+
+      if (diferencaPC !== 0) {
+
+        if (diferencaPC > 0) {
+
+          mensagem +=
+            `PC: ${diferencaPC} tag(s) a mais.\n` +
+            `Esperado: ${esperado.qtd_pc}\n` +
+            `Lido: ${quantidadePC}\n\n`;
+
+        } else {
+
+          mensagem +=
+            `PC: ${Math.abs(diferencaPC)} tag(s) a menos.\n` +
+            `Esperado: ${esperado.qtd_pc}\n` +
+            `Lido: ${quantidadePC}\n\n`;
+
+        }
+
+      }
+
+
+      Alert.alert(
+        "Transação com divergência",
+        mensagem
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Se chegou aqui, todas as quantidades
+     * estão exatamente iguais.
+     */
+
+    Alert.alert(
+      "Transação bem-sucedida",
+      `Documento ${idDocumento}\n\n` +
+      "Todas as tags esperadas foram lidas corretamente.\n\n" +
+      `PIC: ${quantidadePIC}\n` +
+      `PFC: ${quantidadePFC}\n` +
+      `PC: ${quantidadePC}\n\n` +
+      `Total: ${tagsLidasRef.current.length}`
+    );
+
+  }
+
+
+  // ==========================================
+  // INTERFACE
+  // ==========================================
 
   return (
 
@@ -535,26 +823,28 @@ PC: ${lidoPC}`
         <Button
           title={
             lendo
-              ? "Aproxime a tag..."
-              : "Ler próxima tag"
+              ? "Parar leitura"
+              : "Ler tags"
           }
-          onPress={lerTag}
-          disabled={lendo}
+          onPress={alternarLeitura}
         />
 
       </View>
 
 
       {/* ========================= */}
-      {/* FINALIZAR */}
+      {/* STATUS */}
       {/* ========================= */}
 
-      <View style={styles.botao}>
+      <View style={styles.status}>
 
-        <Button
-          title="Finalizar leitura"
-          onPress={finalizarLeitura}
-        />
+        <Text style={styles.statusTexto}>
+
+          {lendo
+            ? "Leitura ativa - aproxime as tags NFC"
+            : "Leitura parada"}
+
+        </Text>
 
       </View>
 
@@ -564,6 +854,10 @@ PC: ${lidoPC}`
 
 }
 
+
+// ==========================================
+// ESTILOS
+// ==========================================
 
 const styles = StyleSheet.create({
 
@@ -649,6 +943,30 @@ const styles = StyleSheet.create({
   botao: {
 
     marginBottom: 15,
+
+  },
+
+
+  status: {
+
+    backgroundColor: "#ffffff",
+
+    padding: 15,
+
+    borderRadius: 8,
+
+    marginBottom: 20,
+
+  },
+
+
+  statusTexto: {
+
+    textAlign: "center",
+
+    fontSize: 16,
+
+    fontWeight: "bold",
 
   },
 
