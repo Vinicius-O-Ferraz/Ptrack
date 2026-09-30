@@ -167,7 +167,7 @@ export default function CadastrarTags() {
     Alert.alert("Sucesso", "Documento de remessa cadastrado!");
 
     router.push({
-      pathname: "/leituraTags",
+      pathname: "/homeDriver",
       params: {
         numeroRemessa,
         caixasPC,
