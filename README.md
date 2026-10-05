@@ -30,9 +30,15 @@ O Ptrack é um aplicativo elaborado durando o Trabalho de Conclusão de Curso(TC
 
 ## Releases
 
-  ### V1 
-  Na primeira release, já temos o app conectando ao banco de dados para autenticação e o mock das telas principais para os funcionários e motoristas. Abaixo segue uma demosntração da V1.
+### V1 
+Na primeira release, já é possível cadastrar o usuário e fazer login usando a API do Supabase e estão feitas todas as funções básicas do motorista. 
 
+Está modelado o CRUD de rotas que usa a API do nominatim para traduzir endereços em coordenadas geográficas. Também é possível criar o documento de remessa com os números das caixas de cada tipo associadas a placa de veículo de transporte e motorista. Por fim, é possível usar o react-native-nfc-manager para ler as tags e comparar com as quantidades de notas de remessa para verificar se houveram divergências.
+
+Abaixo segue uma demosntração da V1.
+
+
+#### Demonstração do cadastro/login
 <table>
   <tr>
     <td align="center">
@@ -43,6 +49,36 @@ O Ptrack é um aplicativo elaborado durando o Trabalho de Conclusão de Curso(TC
     </td>
   </tr>
 </table>
+
+#### Demonstração de CRUD de criar/alterar rotas
+
+
+<table>
+  <tr>
+    <td align="center">
+      <video src="https://github.com/user-attachments/assets/c354d7e4-2a93-4384-a01a-118003d4e5d6
+" width="500" controls></video>
+    </td>
+    <td align="center">
+      <video src="https://github.com/user-attachments/assets/2de96d9b-76cd-4e96-8d11-cae56493b44a
+" width="500" controls></video>
+  </tr>
+</table>
+
+#### Criando documento de remessa/ Lendo tags NFC e conferindo divergências
+
+<table>
+  <tr>
+    <td align="center">
+      <video src="https://github.com/user-attachments/assets/fa396f9c-88f5-4713-869d-b92df4f74ba2
+" width="500" controls></video>
+    </td>
+    <td align="center">
+      <video src="https://github.com/user-attachments/assets/99b177fa-4928-4dc2-8b54-0dc18f56a35f
+" width="500" controls></video>
+  </tr>
+</table>
+
 
 
 
