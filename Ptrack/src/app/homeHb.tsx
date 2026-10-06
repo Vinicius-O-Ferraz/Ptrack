@@ -5,8 +5,7 @@ import Button from "./Button";
 export default function homeDriver() {
 
   function cadastrar_veiculos() {
-    // router.push("/adicionarCaixas");
-    router.push("./todo");
+    router.push("./cadastrarVeiculos");
   }
 
   function gravarTagsCorreio() {
@@ -70,7 +69,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-     backgroundColor: "#e0ad2a",
+    backgroundColor: "#f7c23e",
   },
 
   logo: {
