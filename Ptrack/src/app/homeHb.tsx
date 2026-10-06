@@ -9,8 +9,8 @@ export default function homeDriver() {
   }
 
   function gravarTagsCorreio() {
-    router.push("./todo");
-    // router.push("/adicionarNumeroRemessa");
+    // router.push("./todo");
+    router.push("/gravarTagsCorreio");
   }
 
     function gravarTagsP00() {
@@ -36,7 +36,7 @@ export default function homeDriver() {
       </Text>
       
       <Button
-        title="Cadastrar veículo qualificados"
+        title="Cadastrar veículo qualificado"
         onPress={cadastrar_veiculos}
       />
 
