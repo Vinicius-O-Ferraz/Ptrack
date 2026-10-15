@@ -484,7 +484,7 @@ export default function LerTags() {
   // BOTÃO LER / PARAR
   // ==========================================
 
-  function alternarLeitura() {
+  async function alternarLeitura() {
 
     /*
      * ----------------------------------------
@@ -522,10 +522,8 @@ export default function LerTags() {
        * transação.
        */
 
-      finalizarLeitura();
-
-      return;
-
+    await finalizarLeitura();
+    return;
     }
 
 
@@ -582,153 +580,281 @@ export default function LerTags() {
   // FINALIZAR LEITURA
   // ==========================================
 
-  function finalizarLeitura() {
+  // function finalizarLeitura() {
 
-    const quantidadePIC =
-      lidoPICRef.current;
+  //   const quantidadePIC =
+  //     lidoPICRef.current;
 
-    const quantidadePFC =
-      lidoPFCRef.current;
+  //   const quantidadePFC =
+  //     lidoPFCRef.current;
 
-    const quantidadePC =
-      lidoPCRef.current;
-
-
-    const diferencaPIC =
-      quantidadePIC -
-      esperado.qtd_pic;
+  //   const quantidadePC =
+  //     lidoPCRef.current;
 
 
-    const diferencaPFC =
-      quantidadePFC -
-      esperado.qtd_pfc;
+  //   const diferencaPIC =
+  //     quantidadePIC -
+  //     esperado.qtd_pic;
 
 
-    const diferencaPC =
-      quantidadePC -
-      esperado.qtd_pc;
+  //   const diferencaPFC =
+  //     quantidadePFC -
+  //     esperado.qtd_pfc;
 
 
-    /*
-     * Verifica se existe alguma
-     * divergência.
-     */
+  //   const diferencaPC =
+  //     quantidadePC -
+  //     esperado.qtd_pc;
 
-    if (
+
+  //   /*
+  //    * Verifica se existe alguma
+  //    * divergência.
+  //    */
+
+  //   if (
+  //     diferencaPIC !== 0 ||
+  //     diferencaPFC !== 0 ||
+  //     diferencaPC !== 0
+  //   ) {
+
+  //     let mensagem =
+  //       `Documento: ${idDocumento}\n\n`;
+
+
+  //     mensagem +=
+  //       "Divergências encontradas:\n\n";
+
+
+  //     /*
+  //      * PIC
+  //      */
+
+  //     if (diferencaPIC !== 0) {
+
+  //       if (diferencaPIC > 0) {
+
+  //         mensagem +=
+  //           `PIC: ${diferencaPIC} tag(s) a mais.\n` +
+  //           `Esperado: ${esperado.qtd_pic}\n` +
+  //           `Lido: ${quantidadePIC}\n\n`;
+
+  //       } else {
+
+  //         mensagem +=
+  //           `PIC: ${Math.abs(diferencaPIC)} tag(s) a menos.\n` +
+  //           `Esperado: ${esperado.qtd_pic}\n` +
+  //           `Lido: ${quantidadePIC}\n\n`;
+
+  //       }
+
+  //     }
+
+
+  //     /*
+  //      * PFC
+  //      */
+
+  //     if (diferencaPFC !== 0) {
+
+  //       if (diferencaPFC > 0) {
+
+  //         mensagem +=
+  //           `PFC: ${diferencaPFC} tag(s) a mais.\n` +
+  //           `Esperado: ${esperado.qtd_pfc}\n` +
+  //           `Lido: ${quantidadePFC}\n\n`;
+
+  //       } else {
+
+  //         mensagem +=
+  //           `PFC: ${Math.abs(diferencaPFC)} tag(s) a menos.\n` +
+  //           `Esperado: ${esperado.qtd_pfc}\n` +
+  //           `Lido: ${quantidadePFC}\n\n`;
+
+  //       }
+
+  //     }
+
+
+  //     /*
+  //      * PC
+  //      */
+
+  //     if (diferencaPC !== 0) {
+
+  //       if (diferencaPC > 0) {
+
+  //         mensagem +=
+  //           `PC: ${diferencaPC} tag(s) a mais.\n` +
+  //           `Esperado: ${esperado.qtd_pc}\n` +
+  //           `Lido: ${quantidadePC}\n\n`;
+
+  //       } else {
+
+  //         mensagem +=
+  //           `PC: ${Math.abs(diferencaPC)} tag(s) a menos.\n` +
+  //           `Esperado: ${esperado.qtd_pc}\n` +
+  //           `Lido: ${quantidadePC}\n\n`;
+
+  //       }
+
+  //     }
+
+
+  //     Alert.alert(
+  //       "Transação com divergência",
+  //       mensagem
+  //     );
+
+  //     return;
+
+  //   }
+
+
+  //   /*
+  //    * Se chegou aqui, todas as quantidades
+  //    * estão exatamente iguais.
+  //    */
+
+  //   Alert.alert(
+  //     "Transação bem-sucedida",
+  //     `Documento ${idDocumento}\n\n` +
+  //     "Todas as tags esperadas foram lidas corretamente.\n\n" +
+  //     `PIC: ${quantidadePIC}\n` +
+  //     `PFC: ${quantidadePFC}\n` +
+  //     `PC: ${quantidadePC}\n\n` +
+  //     `Total: ${tagsLidasRef.current.length}`
+  //   );
+
+  // }
+
+  
+  // ==========================================
+  // FINALIZAR LEITURA E SALVAR DIVERGÊNCIA
+  // ==========================================
+
+  async function finalizarLeitura() {
+    const quantidadePIC = lidoPICRef.current;
+    const quantidadePFC = lidoPFCRef.current;
+    const quantidadePC = lidoPCRef.current;
+
+    // Divergência = esperado - quantidade lida
+    const diferencaPIC = esperado.qtd_pic - quantidadePIC;
+    const diferencaPFC = esperado.qtd_pfc - quantidadePFC;
+    const diferencaPC = esperado.qtd_pc - quantidadePC;
+
+    const existeDivergencia =
       diferencaPIC !== 0 ||
       diferencaPFC !== 0 ||
-      diferencaPC !== 0
-    ) {
+      diferencaPC !== 0;
 
+    // ------------------------------------------
+    // EXISTE DIVERGÊNCIA: SALVAR NO SUPABASE
+    // ------------------------------------------
+
+    if (existeDivergencia) {
+      const { error } = await supabase
+        .from("divergencia")
+        .upsert(
+          {
+            id_documento: Number(idDocumento),
+            qtd_pic: diferencaPIC,
+            qtd_pfc: diferencaPFC,
+            qtd_pc: diferencaPC,
+          },
+          {
+            onConflict: "id_documento",
+          }
+        );
+
+      if (error) {
+        console.error(
+          "Erro ao salvar divergência:",
+          error
+        );
+
+        Alert.alert(
+          "Erro ao salvar",
+          "A divergência foi identificada, mas não foi possível salvá-la no banco de dados.\n\n" +
+            error.message
+        );
+
+        return;
+      }
+
+      // Monta o relatório da divergência
       let mensagem =
-        `Documento: ${idDocumento}\n\n`;
-
-
-      mensagem +=
+        `Documento: ${idDocumento}\n\n` +
         "Divergências encontradas:\n\n";
 
-
-      /*
-       * PIC
-       */
-
       if (diferencaPIC !== 0) {
-
-        if (diferencaPIC > 0) {
-
-          mensagem +=
-            `PIC: ${diferencaPIC} tag(s) a mais.\n` +
-            `Esperado: ${esperado.qtd_pic}\n` +
-            `Lido: ${quantidadePIC}\n\n`;
-
-        } else {
-
-          mensagem +=
-            `PIC: ${Math.abs(diferencaPIC)} tag(s) a menos.\n` +
-            `Esperado: ${esperado.qtd_pic}\n` +
-            `Lido: ${quantidadePIC}\n\n`;
-
-        }
-
+        mensagem +=
+          `PIC: ${diferencaPIC > 0 ? diferencaPIC + " faltando" : Math.abs(diferencaPIC) + " a mais"}\n` +
+          `Esperado: ${esperado.qtd_pic}\n` +
+          `Lido: ${quantidadePIC}\n\n`;
       }
-
-
-      /*
-       * PFC
-       */
 
       if (diferencaPFC !== 0) {
-
-        if (diferencaPFC > 0) {
-
-          mensagem +=
-            `PFC: ${diferencaPFC} tag(s) a mais.\n` +
-            `Esperado: ${esperado.qtd_pfc}\n` +
-            `Lido: ${quantidadePFC}\n\n`;
-
-        } else {
-
-          mensagem +=
-            `PFC: ${Math.abs(diferencaPFC)} tag(s) a menos.\n` +
-            `Esperado: ${esperado.qtd_pfc}\n` +
-            `Lido: ${quantidadePFC}\n\n`;
-
-        }
-
+        mensagem +=
+          `PFC: ${diferencaPFC > 0 ? diferencaPFC + " faltando" : Math.abs(diferencaPFC) + " a mais"}\n` +
+          `Esperado: ${esperado.qtd_pfc}\n` +
+          `Lido: ${quantidadePFC}\n\n`;
       }
-
-
-      /*
-       * PC
-       */
 
       if (diferencaPC !== 0) {
-
-        if (diferencaPC > 0) {
-
-          mensagem +=
-            `PC: ${diferencaPC} tag(s) a mais.\n` +
-            `Esperado: ${esperado.qtd_pc}\n` +
-            `Lido: ${quantidadePC}\n\n`;
-
-        } else {
-
-          mensagem +=
-            `PC: ${Math.abs(diferencaPC)} tag(s) a menos.\n` +
-            `Esperado: ${esperado.qtd_pc}\n` +
-            `Lido: ${quantidadePC}\n\n`;
-
-        }
-
+        mensagem +=
+          `PC: ${diferencaPC > 0 ? diferencaPC + " faltando" : Math.abs(diferencaPC) + " a mais"}\n` +
+          `Esperado: ${esperado.qtd_pc}\n` +
+          `Lido: ${quantidadePC}\n\n`;
       }
 
-
       Alert.alert(
-        "Transação com divergência",
-        mensagem
+        "Divergência salva",
+        mensagem +
+          "Os dados foram registrados no banco de dados."
       );
 
       return;
-
     }
 
+    // ------------------------------------------
+    // SEM DIVERGÊNCIA: REMOVER REGISTRO ANTIGO
+    // ------------------------------------------
+    // Se já havia uma divergência de uma leitura
+    // anterior, ela deixa de ser necessária.
 
-    /*
-     * Se chegou aqui, todas as quantidades
-     * estão exatamente iguais.
-     */
+    const { error } = await supabase
+      .from("divergencia")
+      .delete()
+      .eq("id_documento", Number(idDocumento));
+
+    if (error) {
+      console.error(
+        "Erro ao remover divergência anterior:",
+        error
+      );
+
+      Alert.alert(
+        "Erro ao atualizar",
+        "A leitura foi concluída sem divergências, mas não foi possível remover um registro anterior.\n\n" +
+          error.message
+      );
+
+      return;
+    }
 
     Alert.alert(
       "Transação bem-sucedida",
-      `Documento ${idDocumento}\n\n` +
-      "Todas as tags esperadas foram lidas corretamente.\n\n" +
-      `PIC: ${quantidadePIC}\n` +
-      `PFC: ${quantidadePFC}\n` +
-      `PC: ${quantidadePC}\n\n` +
-      `Total: ${tagsLidasRef.current.length}`
+      `Documento: ${idDocumento}\n\n` +
+        "Todas as quantidades estão corretas.\n\n" +
+        `PIC: ${quantidadePIC}\n` +
+        `PFC: ${quantidadePFC}\n` +
+        `PC: ${quantidadePC}\n\n` +
+        `Total: ${tagsLidasRef.current.length}\n\n` +
+        "Nenhuma divergência registrada."
     );
-
   }
+
 
 
   // ==========================================
