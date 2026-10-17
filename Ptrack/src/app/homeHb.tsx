@@ -14,7 +14,7 @@ export default function homeDriver() {
   }
 
     function gravarTagsP00() {
-    router.push("./todo");
+    router.push("./consultarP00");
     // router.push("/adicionarNumeroRemessa");
   }
 
