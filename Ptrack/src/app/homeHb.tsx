@@ -27,6 +27,9 @@ export default function homeDriver() {
     router.push("./todo");
     // router.push("/adicionarNumeroRemessa");
   }
+    function pesquisarPalletsDocRemessa(){
+      router.push("./pesquisarPalletsDocRemessa");
+    }
 
   return (
     <View style={styles.container}>
@@ -58,6 +61,11 @@ export default function homeDriver() {
             <Button
         title="Vincular tags do p01 aos pallets p01"
         onPress={tranferirTagsP01P001}
+      />
+
+      <Button
+        title="Pesquisar Pallets/Remessa"
+        onPress={pesquisarPalletsDocRemessa}
       />
 
     </View>
