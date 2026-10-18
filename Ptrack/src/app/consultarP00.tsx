@@ -93,7 +93,7 @@ export default function ConsultarPallet() {
 
   function usarPallet(pallet: Pallet) {
     router.push({
-      pathname: "./todo",
+      pathname: "./associarCaixaPalletP00",
       params: {
         palletId: String(pallet.pallet_id),
         tipoPallet: pallet.tipo_pallet,
