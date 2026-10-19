@@ -18,8 +18,8 @@ export default function homeDriver() {
     // router.push("/adicionarNumeroRemessa");
   }
 
-   function tranferirTagsP00P001() {
-    router.push("./todo");
+   function tranferirTagsP00P01() {
+    router.push("./tranferirTagsP00P01");
     // router.push("/adicionarNumeroRemessa");
   }
 
@@ -38,6 +38,12 @@ export default function homeDriver() {
           Funcionário Hemobrás
       </Text>
       
+      
+      <Button
+        title="Pesquisar Pallets/Remessa"
+        onPress={pesquisarPalletsDocRemessa}
+      />
+      
       <Button
         title="Cadastrar veículo qualificado"
         onPress={cadastrar_veiculos}
@@ -54,8 +60,8 @@ export default function homeDriver() {
       />
 
       <Button
-        title="Vincular tags do p0 aos pallets p01"
-        onPress={tranferirTagsP00P001}
+        title="Vincular tags do p00 aos pallets p01"
+        onPress={tranferirTagsP00P01}
       />
 
             <Button
@@ -63,10 +69,6 @@ export default function homeDriver() {
         onPress={tranferirTagsP01P001}
       />
 
-      <Button
-        title="Pesquisar Pallets/Remessa"
-        onPress={pesquisarPalletsDocRemessa}
-      />
 
     </View>
   );
