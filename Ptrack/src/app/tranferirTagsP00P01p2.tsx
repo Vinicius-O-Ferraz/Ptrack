@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import { router } from "expo-router";
+import { router, useLocalSearchParams  } from "expo-router";
 import { supabase } from "./supabaseClient";
 
 type Pallet = {
@@ -21,12 +21,22 @@ type Pallet = {
   tipo_pallet: string;
 };
 
+
+
 export default function ConsultarPallet() {
   const [palletId, setPalletId] = useState("");
   const [palletEncontrado, setPalletEncontrado] =
     useState<Pallet | null>(null);
 
   const [buscando, setBuscando] = useState(false);
+
+    const {
+      palletIdP00,
+      tipoPalletP00,
+    } = useLocalSearchParams<{
+      palletIdP00: string;
+      tipoPalletP00: string;
+    }>();
 
   async function buscarPallet() {
     const id = palletId.trim();
@@ -91,12 +101,16 @@ export default function ConsultarPallet() {
     }
   }
 
+
+
   function usarPallet(pallet: Pallet) {
     router.push({
       pathname: "./associarCaixaPalletP00P01",
       params: {
-        palletId: String(pallet.pallet_id),
-        tipoPallet: pallet.tipo_pallet,
+        palletIdP01: String(pallet.pallet_id),
+        tipoPalletP01: pallet.tipo_pallet,
+        palletIdP00,
+        tipoPalletP00,
       },
 //      params: {
 //     palletIdP00: String(palletSelecionadoP00.pallet_id),

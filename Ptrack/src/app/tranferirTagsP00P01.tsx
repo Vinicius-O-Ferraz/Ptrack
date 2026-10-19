@@ -22,14 +22,14 @@ type Pallet = {
 };
 
 export default function ConsultarPallet() {
-  const [palletId, setPalletId] = useState("");
+  const [palletIdP00, setPalletId] = useState("");
   const [palletEncontrado, setPalletEncontrado] =
     useState<Pallet | null>(null);
 
   const [buscando, setBuscando] = useState(false);
 
   async function buscarPallet() {
-    const id = palletId.trim();
+    const id = palletIdP00.trim();
 
     if (!id) {
       Alert.alert(
@@ -95,8 +95,8 @@ export default function ConsultarPallet() {
     router.push({
       pathname: "./tranferirTagsP00P01p2",
       params: {
-        palletId: String(pallet.pallet_id),
-        tipoPallet: pallet.tipo_pallet,
+        palletIdP00: String(pallet.pallet_id),
+        tipoPalletP00: pallet.tipo_pallet,
       },
     });
   }
@@ -122,7 +122,7 @@ export default function ConsultarPallet() {
       <View style={styles.buscaContainer}>
         <TextInput
           style={styles.input}
-          value={palletId}
+          value={palletIdP00}
           onChangeText={setPalletId}
           placeholder="ID do pallet"
           keyboardType="numeric"
