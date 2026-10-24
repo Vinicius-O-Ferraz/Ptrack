@@ -24,7 +24,7 @@ export default function homeDriver() {
   }
 
      function tranferirTagsP01P001() {
-    router.push("./todo");
+    router.push("./tranferirTagsP01P01");
     // router.push("/adicionarNumeroRemessa");
   }
     function pesquisarPalletsDocRemessa(){
