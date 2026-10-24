@@ -147,7 +147,7 @@ export default function AssociarCaixasPallet() {
         .from("pallet_caixa")
         .insert({
           pallet_id: pallet.pallet_id,
-          id_caixa: caixa.tag,
+          caixa_id: caixa.tag,
           tipo_caixa: caixa.tipo,
         });
 

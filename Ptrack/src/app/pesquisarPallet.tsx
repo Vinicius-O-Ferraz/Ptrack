@@ -15,7 +15,7 @@ import {
 import { supabase } from "./supabaseClient";
 
 type CaixaPallet = {
-  id_caixa: string;
+  caixa_id: string;
   tipo_caixa: string;
 };
 
@@ -84,7 +84,7 @@ export default function ConsultarPallet() {
       // 2. Busca as caixas associadas ao pallet.
       const { data: caixas, error: erroCaixas } = await supabase
         .from("pallet_caixa")
-        .select("id_caixa, tipo_caixa")
+        .select("caixa_id, tipo_caixa")
         .eq("pallet_id", idNumerico);
 
       if (erroCaixas) {
